@@ -41,9 +41,17 @@ func TestPrefixToInfixComplex(t *testing.T) {
 	}
 }
 
-func TestPrefixToInfixEmpty(t *testing.T) {
-	_, err := PrefixToInfix("")
-	assert.Error(t, err)
+func TestPrefixToInfixError(t *testing.T) {
+	_, err1 := PrefixToInfix("   ")
+	assert.Error(t, err1)
+	_, err2 := PrefixToInfix("+2155")
+	assert.Error(t, err2)
+	_, err3 := PrefixToInfix("+21* 55 52")
+	assert.Error(t, err3)
+	_, err4 := PrefixToInfix("*- 122")
+	assert.Error(t, err4)
+	_, err5 := PrefixToInfix("- 125 *- 122 144 10")
+	assert.Error(t, err5)
 }
 
 func ExamplePrefixToInfix() {
