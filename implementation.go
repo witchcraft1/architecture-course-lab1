@@ -1,6 +1,8 @@
 package Lab1
 
 import (
+	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -8,6 +10,7 @@ type Symbol int
 
 const (
 	Else Symbol = iota
+	Space
 	Number
 	SimpOperator
 	CompOperator
@@ -15,24 +18,30 @@ const (
 )
 
 func CharType(c string) Symbol {
-	if c >= "0" && c <= "9" {
+	if _, err := strconv.Atoi(c); err == nil {
 		return Number
 	} else if strings.ContainsAny(c, "+-") {
 		return SimpOperator
 	} else if strings.ContainsAny(c, "*/") {
 		return CompOperator
-	} else if strings.ContainsAny(c, "^") {
+	} else if c == "^" {
 		return PowOperator
+	} else if c == " " {
+		return Space
 	}
 	return Else
 }
 
 type Prefix struct {
-	str string
+	str []string
 	i   int
 }
 
-func (p Prefix) Current() byte {
+func (p *Prefix) Add(str string) {
+	p.str = append(p.str, str)
+}
+
+func (p Prefix) Get() string {
 	return p.str[p.i]
 }
 func (p *Prefix) Next() {
@@ -41,12 +50,52 @@ func (p *Prefix) Next() {
 	}
 }
 
+func StringToArray(pref *Prefix, input string) error {
+	if len(input) == 0 {
+		return fmt.Errorf("Empty argument")
+	}
+	var res string
+	for i := 0; i < len(input); i++ {
+		char := string(input[i])
+		switch CharType(char) {
+		case SimpOperator, CompOperator, PowOperator:
+			if res != "" {
+				return fmt.Errorf("Invalid syntax")
+			}
+			res = char
+		case Number:
+			if res != "" && CharType(res) != Number {
+				return fmt.Errorf("Invalid syntax")
+			}
+			res += char
+		case Space:
+			if res == "" {
+				return fmt.Errorf("Invalid syntax")
+			}
+			pref.Add(res)
+			res = ""
+		case Else:
+			return fmt.Errorf("Invalid characters")
+		}
+	}
+	if CharType(res) != Number {
+		return fmt.Errorf("Invalid syntax")
+	}
+	pref.Add(res)
+	pref.i = 0
+	return nil
+}
+
 func PrefixToInfix(input string) (string, error) {
-	return parse(&Prefix{input, 0}, Else), nil
+	var prefix Prefix
+	if err := StringToArray(&prefix, input); err != nil {
+		return "", err
+	}
+	return parse(&prefix, Else), nil
 }
 
 func parse(pref *Prefix, prevTSymbol Symbol) string {
-	char := string(pref.Current())
+	char := pref.Get()
 	pref.Next()
 	tSymbol := CharType(char)
 
@@ -59,8 +108,6 @@ func parse(pref *Prefix, prevTSymbol Symbol) string {
 		}
 	case Number:
 		res = char
-	case Else:
-		res = parse(pref, prevTSymbol)
 	}
 	return res
 }

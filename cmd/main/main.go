@@ -2,12 +2,18 @@ package main
 
 import (
 	"fmt"
-	Lab1 "github.com/architecture-course-laba1"
+	"log"
+	"os"
+
+	Lab1 "github.com/witchcraft1/architecture-course-laba1"
 )
 
 func main() {
-	// TODO: Get input from the command line, handle errors.
-	res, _ := Lab1.PrefixToInfix("^7*23")
+	args := os.Args[1:]
+	res, err := Lab1.PrefixToInfix(args[0])
+	if err != nil {
+		log.Fatal(err)
+	}
 	fmt.Println(res)
 	fmt.Println(buildVersion)
 }

@@ -8,36 +8,42 @@ import (
 )
 
 func TestPrefixToInfixSimple(t *testing.T) {
-	res, err := PrefixToInfix("+23")
+	res, err := PrefixToInfix("+ 2 3")
 	if assert.Nil(t, err) {
 		assert.Equal(t, "2+3", res)
 	}
-	res, err = PrefixToInfix("*+723")
+	res, err = PrefixToInfix("* + 7 2 3")
 	if assert.Nil(t, err) {
 		assert.Equal(t, "(7+2)*3", res)
 	}
-	res, err = PrefixToInfix("^7*23")
+	res, err = PrefixToInfix("^ 7 * 2 3")
 	if assert.Nil(t, err) {
 		assert.Equal(t, "7^(2*3)", res)
+	}
+	res, err = PrefixToInfix("* 7 23")
+	if assert.Nil(t, err) {
+		assert.Equal(t, "7*23", res)
 	}
 }
 
 func TestPrefixToInfixComplex(t *testing.T) {
-	res, err := PrefixToInfix("+5-^74*3/^375")
+	res, err := PrefixToInfix("+ 5 - ^ 7 4 * 3 / ^ 3 7 5")
 	if assert.Nil(t, err) {
 		assert.Equal(t, "5+7^4-3*3^7/5", res)
 	}
-	res, err = PrefixToInfix("+5/^^7-4*3375")
+	res, err = PrefixToInfix("+ 5 / ^ ^ 7 - 4 * 3 3 7 5")
 	if assert.Nil(t, err) {
 		assert.Equal(t, "5+7^(4-3*3)^7/5", res)
+	}
+	res, err = PrefixToInfix("- * ^ + 2 13 / + 27 653 340 3 / 560 ^ - 18 4 10")
+	if assert.Nil(t, err) {
+		assert.Equal(t, "(2+13)^((27+653)/340)*3-560/(18-4)^10", res)
 	}
 }
 
 func TestPrefixToInfixEmpty(t *testing.T) {
-	res, err := PrefixToInfix("   ")
-	if assert.Nil(t, err) {
-		assert.Equal(t, "", res)
-	}
+	_, err := PrefixToInfix("")
+	assert.Error(t, err)
 }
 
 func ExamplePrefixToInfix() {
