@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	Lab1 "github.com/architecture-course-laba1"
+	Lab1 "github.com/witchcraft1/architecture-course-laba1"
 	"log"
 )
 
