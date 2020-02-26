@@ -86,11 +86,16 @@ func StringToArray(pref *Prefix, input string) error {
 	return nil
 }
 
+//This function converts prefix expression(+ * 2 2 * - 10 2 5) to infix expression(2*2+(10-2)*5).
+//To convert postfix to infix you have to pass expression as a string.
+//Possible results are infix form of expression or error if it occurs.
 func PrefixToInfix(input string) (string, error) {
 	var prefix Prefix
+//Split operators and operands and check for misspelling
 	if err := StringToArray(&prefix, input); err != nil {
 		return "", err
 	}
+//build new expression through recursive function
 	return parse(&prefix, Else), nil
 }
 
