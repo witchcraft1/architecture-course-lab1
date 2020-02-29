@@ -18,11 +18,11 @@ const (
 )
 
 func CharType(c string) Symbol {
-	if _, err := strconv.Atoi(c); err == nil {
+	if _, err := strconv.Atoi(c); err == nil && !strings.ContainsAny(c, "+-") {
 		return Number
-	} else if strings.ContainsAny(c, "+-") {
+	} else if c == "+" || c == "-" {
 		return SimpOperator
-	} else if strings.ContainsAny(c, "*/") {
+	} else if c == "*" || c == "/" {
 		return CompOperator
 	} else if c == "^" {
 		return PowOperator
@@ -41,49 +41,14 @@ func (p *Prefix) Add(str string) {
 	p.str = append(p.str, str)
 }
 
-func (p Prefix) Get() string {
-	return p.str[p.i]
-}
-func (p *Prefix) Next() {
-	if len(p.str)-1 > p.i {
-		p.i++
+func (p *Prefix) Get() (string, error) {
+	//check if too many operators
+	if len(p.str) <= p.i {
+		return "", fmt.Errorf("Invalid Syntax")
 	}
-}
-
-func StringToArray(pref *Prefix, input string) error {
-	if len(input) == 0 {
-		return fmt.Errorf("Empty argument")
-	}
-	var res string
-	for i := 0; i < len(input); i++ {
-		char := string(input[i])
-		switch CharType(char) {
-		case SimpOperator, CompOperator, PowOperator:
-			if res != "" {
-				return fmt.Errorf("Invalid syntax")
-			}
-			res = char
-		case Number:
-			if res != "" && CharType(res) != Number {
-				return fmt.Errorf("Invalid syntax")
-			}
-			res += char
-		case Space:
-			if res == "" {
-				return fmt.Errorf("Invalid syntax")
-			}
-			pref.Add(res)
-			res = ""
-		case Else:
-			return fmt.Errorf("Invalid characters")
-		}
-	}
-	if CharType(res) != Number {
-		return fmt.Errorf("Invalid syntax")
-	}
-	pref.Add(res)
-	pref.i = 0
-	return nil
+	res := p.str[p.i]
+	p.i++
+	return res, nil
 }
 
 //This function converts prefix expression(+ * 2 2 * - 10 2 5) to infix expression(2*2+(10-2)*5).
@@ -91,28 +56,38 @@ func StringToArray(pref *Prefix, input string) error {
 //Possible results are infix form of expression or error if it occurs.
 func PrefixToInfix(input string) (string, error) {
 	var prefix Prefix
-//Split operators and operands and check for misspelling
-	if err := StringToArray(&prefix, input); err != nil {
-		return "", err
+	prefix.str = strings.Split(input, " ")
+	//check expression and build new expression through recursive function
+	res, err := parse(&prefix, Else)
+	//check if too many operands
+	if prefix.i != len(prefix.str) {
+		return res, fmt.Errorf("Invalid Syntax")
 	}
-//build new expression through recursive function
-	return parse(&prefix, Else), nil
+	return res, err
 }
 
-func parse(pref *Prefix, prevTSymbol Symbol) string {
-	char := pref.Get()
-	pref.Next()
+func parse(pref *Prefix, prevTSymbol Symbol) (string, error) {
+	char, err := pref.Get()
 	tSymbol := CharType(char)
 
 	var res string
 	switch tSymbol {
 	case SimpOperator, CompOperator, PowOperator:
-		res = parse(pref, tSymbol) + char + parse(pref, tSymbol)
+		op1, err1 := parse(pref, tSymbol)
+		op2, err2 := parse(pref, tSymbol)
+		if err1 != nil {
+			err = err1
+		} else if err2 != nil {
+			err = err2
+		}
+		res = op1 + char + op2
 		if tSymbol < prevTSymbol {
 			res = "(" + res + ")"
 		}
 	case Number:
 		res = char
+	case Else:
+		err = fmt.Errorf("Invalid Syntax")
 	}
-	return res
+	return res, err
 }

@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	Lab1 "github.com/witchcraft1/architecture-course-laba1"
 	"log"
+
+	Lab1 "github.com/witchcraft1/architecture-course-laba1"
 )
 
 func main() {
