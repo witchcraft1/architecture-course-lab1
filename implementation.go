@@ -61,7 +61,7 @@ func PrefixToInfix(input string) (string, error) {
 	res, err := parse(&prefix, Else)
 	//check if too many operands
 	if prefix.i != len(prefix.str) {
-		return res, fmt.Errorf("Invalid Syntax")
+		return res, fmt.Errorf("Too many operators or operands")
 	}
 	return res, err
 }
